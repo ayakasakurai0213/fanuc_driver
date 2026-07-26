@@ -153,6 +153,7 @@ def generate_launch_description():
                 "crx10ia_l",
                 "crx20ia_l",
                 "crx30ia",
+                "crx5ia_2f_85gripper", 
             ],
         ),
         DeclareLaunchArgument(

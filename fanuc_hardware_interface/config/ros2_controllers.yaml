@@ -13,6 +13,8 @@
       type: fanuc_controllers/FanucForceSensorBroadcaster
     force_torque_sensor_broadcaster:
       type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
+    fanuc_gripper_controller:
+      type: fanuc_controllers/ScaledJointTrajectoryController
 
 /**/fanuc_gpio_controller:
   ros__parameters:
@@ -73,3 +75,12 @@
   ros__parameters:
     sensor_name: "ft_sensor"
     frame_id: "$(var prefix)fanuc_flange"
+
+/**/fanuc_gripper_controller:
+  ros__parameters:
+    joints:
+      - "$(var prefix)robotiq_85_left_knuckle_joint"
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position

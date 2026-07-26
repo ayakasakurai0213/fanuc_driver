@@ -190,6 +190,14 @@ def launch_setup(context, *args, **kwargs):
             shell=True,
             output="screen",
         ),
+        ExecuteProcess(
+            cmd=[
+                "ros2 run controller_manager spawner --controller-manager-timeout 180 fanuc_gripper_controller",
+                controller_manager_name_argument,
+            ],
+            shell=True,
+            output="screen",
+        ),
     ]
 
     return nodes_to_launch + controller_spawner_processes
