@@ -10,3 +10,6 @@
 [submodule "fanuc_libs/dependencies/yaml-cpp"]
 	path = fanuc_libs/dependencies/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git
+[submodule "topic_based_ros2_control"]
+	path = topic_based_ros2_control
+	url = https://github.com/PickNikRobotics/topic_based_ros2_control.git

@@ -4,25 +4,14 @@
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
     joint_trajectory_controller:
-      type: fanuc_controllers/ScaledJointTrajectoryController
-    fanuc_gpio_controller:
-      type: fanuc_controllers/FanucGPIOController
-    forward_position_controller:
-      type: forward_command_controller/ForwardCommandController
-    fanuc_force_sensor_broadcaster:
-      type: fanuc_controllers/FanucForceSensorBroadcaster
-    force_torque_sensor_broadcaster:
-      type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
+      type: joint_trajectory_controller/JointTrajectoryController
     fanuc_gripper_controller:
-      type: fanuc_controllers/ScaledJointTrajectoryController
+      type: joint_trajectory_controller/JointTrajectoryController
 
-/**/fanuc_gpio_controller:
-  ros__parameters:
-    gpio_config_file_package: $(var gpio_config_package)
-    gpio_config_file_path: $(var gpio_config_path)
 
 /**/joint_trajectory_controller:
   ros__parameters:
+    use_sim_time: true
     joints:
       - "$(var prefix)J1"
       - "$(var prefix)J2"
@@ -60,24 +49,9 @@
         goal: 0.05
         trajectory: 0.25
 
-/**/forward_position_controller:
-  ros__parameters:
-    joints:
-      - "$(var prefix)J1"
-      - "$(var prefix)J2"
-      - "$(var prefix)J3"
-      - "$(var prefix)J4"
-      - "$(var prefix)J5"
-      - "$(var prefix)J6"
-    interface_name: "position"
-
-/**/force_torque_sensor_broadcaster:
-  ros__parameters:
-    sensor_name: "ft_sensor"
-    frame_id: "$(var prefix)fanuc_flange"
-
 /**/fanuc_gripper_controller:
   ros__parameters:
+    use_sim_time: true
     joints:
       - "$(var prefix)finger_joint"
     command_interfaces:

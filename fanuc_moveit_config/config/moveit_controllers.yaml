@@ -11,6 +11,30 @@ trajectory_execution:
 
 moveit_controller_manager: moveit_ros_control_interface/Ros2ControlManager
 
+moveit_ros_control_interface:
+  controller_names:
+    - joint_trajectory_controller
+    - fanuc_gripper_controller
+  
+  joint_trajectory_controller:
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    default: true
+    joints:
+      - J1
+      - J2
+      - J3
+      - J4
+      - J5
+      - J6
+  
+  fanuc_gripper_controller:
+    action_ns: gripper_cmd
+    type: GripperCommand
+    default: true
+    joints:
+      - finger_joint
+
 # Increase timeout for controller manager
 controller_manager_timeout: 10.0
 

@@ -1,7 +1,13 @@
 <?xml version="1.0"?>
 
 <robot xmlns:xacro="http://wiki.ros.org/xacro">
-  <xacro:macro name="crx_control" params="name prefix=''">
+  <xacro:macro name="crx_control" params="
+    name 
+    prefix='' 
+    sim_isaac=false
+    mock_sensor_commands=false
+    gripper_closed_position=0.7929">
+
     <ros2_control name="${name}" type="system">
       <joint name="${prefix}J1">
         <command_interface name="position"/>
@@ -30,6 +36,37 @@
       </joint>
       <joint name="${prefix}J6">
         <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <!-- gripper -->
+      <!-- Joint interfaces -->
+      <!-- With Gazebo or Hardware, they handle mimic joints, so we only need this command interface activated -->
+      <joint name="${prefix}finger_joint">
+        <command_interface name="position" />
+        <state_interface name="position">
+          <param name="initial_value">${gripper_closed_position}</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}right_outer_knuckle_joint">
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}left_inner_finger_knuckle_joint">
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}right_inner_finger_knuckle_joint">
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}left_inner_finger_joint">
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}right_inner_finger_joint">
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
@@ -184,6 +221,11 @@
         <state_interface name="tp_enabled"/>
       </gpio>
 
+      <gpio name="reactivate_gripper">
+        <command_interface name="reactivate_gripper_cmd" />
+        <command_interface name="reactivate_gripper_response" />
+      </gpio>
+
       <sensor name="Force">
         <state_interface name="force_x"/>
         <state_interface name="force_y"/>
@@ -207,7 +249,10 @@
         <plugin>mock_components/GenericSystem</plugin>
         <param name="state_following_offset">0.0</param>
         <param name="calculate_dynamics">true</param>
+        <param name="mock_sensor_commands">${mock_sensor_commands}</param>
+        <param name="state_following_offset">0.0</param>
       </hardware>
+
     </ros2_control>
   </xacro:macro>
 </robot>

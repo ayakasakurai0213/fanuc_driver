@@ -12,4 +12,4 @@ initial_positions:
   J4: 0
   J5: 0
   J6: 0
-  robotiq_85_left_knuckle_joint: 0
+  finger_joint: 0

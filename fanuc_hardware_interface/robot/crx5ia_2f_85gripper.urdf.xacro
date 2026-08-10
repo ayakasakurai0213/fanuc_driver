@@ -9,6 +9,7 @@
   <xacro:arg name="out_cmd_interp_buff_target" default="8"/>
   <xacro:arg name="force_sensor_type" default="1"/>
   <xacro:arg name="use_mock" default="false"/>
+  <xacro:arg name="sim_isaac" default="false"/>
   <xacro:arg name="motion_control" default="1"/>
   <xacro:arg name="origin_xyz" default="0 0 0"/>
   <xacro:arg name="origin_rpy" default="0 0 0"/>
@@ -18,6 +19,13 @@
   <xacro:arg name="gripper_name" default="RobotiqGripperHardwareInterface" />
   <xacro:arg name="use_fake_hardware" default="true" />
   <xacro:arg name="com_port" default="/dev/ttyUSB0" />
+
+  <xacro:arg name="gripper_closed_position" default="0.7929" />
+  <xacro:arg name="gripper_speed_multiplier" default="1.0" />
+  <xacro:arg name="gripper_force_multiplier" default="0.5" />
+  <xacro:arg name="gripper_max_speed" default="0.150" />
+  <xacro:arg name="gripper_max_force" default="235.0" />
+
 
   <xacro:include filename="$(find fanuc_crx_description)/urdf/crx5ia_2f_85gripper_urdf_macro.xacro"/>
   <xacro:if value="$(arg use_mock)">
@@ -33,5 +41,5 @@
     <origin xyz="$(arg origin_xyz)" rpy="$(arg origin_rpy)"/>
   </xacro:crx5ia_2f_85gripper>
 
-  <xacro:crx_control name="crx5ia_2f_85gripper" prefix="$(arg prefix)"/>
+  <xacro:crx_control name="crx5ia_2f_85gripper" prefix="$(arg prefix)" sim_isaac="$(arg sim_isaac)"/>
 </robot>

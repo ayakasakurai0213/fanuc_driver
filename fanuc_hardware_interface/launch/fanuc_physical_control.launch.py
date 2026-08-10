@@ -28,6 +28,7 @@ def launch_setup(context, *args, **kwargs):
     robot_model = LaunchConfiguration("robot_model")
     robot_series = LaunchConfiguration("robot_series")
     robot_ip = LaunchConfiguration("robot_ip")
+    sim_isaac = LaunchConfiguration("sim_isaac")
     ros2_control_config = LaunchConfiguration("ros2_control_config")
     gpio_config_package = LaunchConfiguration("gpio_config_package")
     gpio_config_path = LaunchConfiguration("gpio_config_path")
@@ -66,6 +67,9 @@ def launch_setup(context, *args, **kwargs):
             "robot_ip:=",
             robot_ip,
             " ",
+            "sim_isaac:=", 
+            sim_isaac, 
+            " ", 
             "gpio_configuration:=",
             PathJoinSubstitution(
                 [FindPackageShare(gpio_config_package), gpio_config_path]
@@ -223,6 +227,11 @@ def generate_launch_description():
             default_value="192.168.1.100",
             description="The robot's IP address.",
         ),
+        DeclareLaunchArgument(
+            "sim_isaac", 
+            default_value="false", 
+            description="Use Isaac Sim interface.",     
+        ), 
         DeclareLaunchArgument(
             "ros2_control_config",
             default_value=PathJoinSubstitution(

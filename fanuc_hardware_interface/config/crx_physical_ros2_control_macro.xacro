@@ -1,7 +1,18 @@
 <?xml version="1.0"?>
 
 <robot xmlns:xacro="http://wiki.ros.org/xacro">
-  <xacro:macro name="crx_control" params="name prefix=''">
+  <xacro:macro name="crx_control" params="
+    name 
+    prefix='' 
+    sim_isaac=false
+    mock_sensor_commands:=false
+    com_port:=/dev/ttyUSB0
+    gripper_speed_multiplier:=1.0
+    gripper_force_multiplier:=0.5
+    gripper_max_speed:=0.150
+    gripper_max_force:=235.0
+    gripper_closed_position:=0.7929">
+
     <ros2_control name="${name}" type="system">
       <joint name="${prefix}J1">
         <command_interface name="position"/>
@@ -33,16 +44,42 @@
         <state_interface name="position"/>
         <state_interface name="velocity"/>
       </joint>
+
+      <!-- gripper -->
+      <!-- Joint interfaces -->
+      <!-- With Gazebo or Hardware, they handle mimic joints, so we only need this command interface activated -->
+      <joint name="${prefix}finger_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
       <hardware>
-        <plugin>fanuc_robot_driver/FanucHardwareInterface</plugin>
-        <param name="robot_ip">$(arg robot_ip)</param>
-        <param name="rmi_port">$(arg rmi_port)</param>
-        <param name="stream_motion_port">$(arg stream_motion_port)</param>
-        <param name="gpio_configuration">$(arg gpio_configuration)</param>
-        <param name="payload_schedule">$(arg payload_schedule)</param>
-        <param name="out_cmd_interp_buff_target">$(arg out_cmd_interp_buff_target)</param>
-        <param name="force_sensor_type">$(arg force_sensor_type)</param>
-	<param name="motion_control">$(arg motion_control)</param>
+        <xacro:if value="${sim_isaac}">
+          <plugin>topic_based_ros2_control/TopicBasedSystem</plugin>
+          <param name="joint_commands_topic">isaac_joint_commands</param>
+          <param name="joint_states_topic">isaac_joint_states</param>
+          <param name="trigger_joint_command_threshold">0.02</param>
+        </xacro:if>
+        <xacro:unless value="${sim_isaac}">
+          <plugin>fanuc_robot_driver/FanucHardwareInterface</plugin>
+          <plugin>robotiq_driver/RobotiqGripperHardwareInterface</plugin>
+          <param name="robot_ip">$(arg robot_ip)</param>
+          <param name="rmi_port">$(arg rmi_port)</param>
+          <param name="stream_motion_port">$(arg stream_motion_port)</param>
+          <param name="gpio_configuration">$(arg gpio_configuration)</param>
+          <param name="payload_schedule">$(arg payload_schedule)</param>
+          <param name="out_cmd_interp_buff_target">$(arg out_cmd_interp_buff_target)</param>
+          <param name="force_sensor_type">$(arg force_sensor_type)</param>
+          <param name="motion_control">$(arg motion_control)</param>
+
+          <param name="gripper_closed_position">${gripper_closed_position}</param>
+          <param name="COM_port">${com_port}</param>
+          <param name="gripper_speed_multiplier">${gripper_speed_multiplier}</param>
+          <param name="gripper_force_multiplier">${gripper_force_multiplier}</param>
+          <param name="gripper_max_speed">${gripper_max_speed}</param>
+          <param name="gripper_max_force">${gripper_max_force}</param>
+        </xacro:unless>
       </hardware>
     </ros2_control>
   </xacro:macro>
