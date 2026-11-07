@@ -21,11 +21,19 @@ def launch_setup(context, *args, **kwargs):
     robot_ip = LaunchConfiguration("robot_ip")
     ros2_control_config = LaunchConfiguration("ros2_control_config")
     use_mock = LaunchConfiguration("use_mock")
+    sim_isaac = LaunchConfiguration("sim_isaac")
     gpio_config_package = LaunchConfiguration("gpio_config_package")
     gpio_config_path = LaunchConfiguration("gpio_config_path")
     motion_control = LaunchConfiguration("motion_control")
 
     nodes_to_launch = []
+    
+    if sim_isaac.perform(context).lower() == "true":
+        ros2_control_config = os.path.join(
+            get_package_share_directory("fanuc_hardware_interface"),
+            "config",
+            "isaac_ros2_controllers.yaml",
+        )
 
     # Conditionally include the appropriate control launch file
     include_fanuc_control = IncludeLaunchDescription(
@@ -47,6 +55,7 @@ def launch_setup(context, *args, **kwargs):
             "ros2_control_config": ros2_control_config,
             "launch_rviz": "false",
             "use_mock": use_mock,
+            "sim_isaac": sim_isaac, 
             "motion_control": motion_control,
         }.items(),
         condition=UnlessCondition(use_mock),
@@ -78,6 +87,11 @@ def launch_setup(context, *args, **kwargs):
     description_arguments = {
         "robot_ip": robot_ip.perform(context),
         "use_mock": use_mock.perform(context),
+        "sim_isaac": sim_isaac.perform(context), 
+        "gpio_configuration": PathJoinSubstitution(
+            [FindPackageShare(gpio_config_package), gpio_config_path]
+        ),
+        "motion_control": motion_control.perform(context),
     }
 
     urdf_full_path = os.path.join(
@@ -94,9 +108,22 @@ def launch_setup(context, *args, **kwargs):
         .robot_description_semantic(
             file_path=f"srdf/{robot_model.perform(context)}.srdf"
         )
+        .trajectory_execution(file_path="config/moveit_controllers.yaml")
+        .planning_scene_monitor(
+            publish_robot_description=True, publish_robot_description_semantic=True
+        )
         .planning_pipelines(pipelines=["ompl"])
         .to_moveit_configs()
     )
+
+    # Start the actual move_group node/action server
+    move_group_node = Node(
+        package="moveit_ros_move_group",
+        executable="move_group",
+        output="log",
+        parameters=[moveit_config.to_dict()],
+    )
+    nodes_to_launch.append(move_group_node)
     
     launch_as_standalone_node = LaunchConfiguration(
         "launch_as_standalone_node", default="false"
@@ -108,6 +135,14 @@ def launch_setup(context, *args, **kwargs):
         "config",
         "servo.yaml",
     )
+    
+    if sim_isaac.perform(context).lower() == "true":
+        servo_path = os.path.join(
+            get_package_share_directory("fanuc_moveit_config"),
+            "config",
+            "servo_isaac.yaml",
+        )
+        
     servo_params = {
         "moveit_servo": ParameterBuilder("moveit_servo")
         .yaml(servo_path)
@@ -130,6 +165,9 @@ def launch_setup(context, *args, **kwargs):
         parameters=[
             moveit_config.robot_description,
             moveit_config.robot_description_semantic,
+            moveit_config.planning_pipelines,
+            moveit_config.robot_description_kinematics,
+            moveit_config.joint_limits,
         ],
         arguments=["--display-config", rviz_file],
     )
@@ -175,26 +213,6 @@ def launch_setup(context, *args, **kwargs):
         output="screen",
     )
     nodes_to_launch.append(container)
-    
-    # Launch a standalone Servo node.
-    # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
-    servo_node = launch_ros.actions.Node(
-        package="moveit_servo",
-        executable="servo_node",
-        name="servo_node",
-        parameters=[
-            servo_params,
-            acceleration_filter_update_period,
-            planning_group_name,
-            moveit_config.robot_description,
-            moveit_config.robot_description_semantic,
-            moveit_config.robot_description_kinematics,
-            moveit_config.joint_limits,
-        ],
-        output="screen",
-        condition=IfCondition(launch_as_standalone_node),
-    )
-    nodes_to_launch.append(servo_node)
 
     return nodes_to_launch
 
@@ -244,6 +262,11 @@ def generate_launch_description():
             "use_mock",
             default_value="false",
             description="Whether to use a mock hardware interface.",
+        ),
+        DeclareLaunchArgument(
+            "sim_isaac",
+            default_value="false",
+            description="Whether to use a isaac sim.",
         ),
         DeclareLaunchArgument(
             "motion_control",

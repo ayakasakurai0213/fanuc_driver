@@ -32,7 +32,7 @@ def launch_setup(context, *args, **kwargs):
 
     nodes_to_launch = []
     
-    if sim_isaac:
+    if sim_isaac.perform(context).lower() == "true":
         ros2_control_config = os.path.join(
             get_package_share_directory("fanuc_hardware_interface"),
             "config",
